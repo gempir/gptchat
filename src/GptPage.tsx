@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useGpt } from "./useGpt";
 
 export function GptPage() {
-    const { makeRequest, messages } = useGpt();
+    const { makeRequest, messages, loading } = useGpt();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -45,8 +45,11 @@ export function GptPage() {
                         </div>
                     </div>)}
                 </div>
+                {loading && <div className="flex justify-center items-center h-20">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-400"></div>
+                </div>}
                 <form onSubmit={handleSubmit} className="flex gap-5 min-h-[100px]" onKeyDown={handleKeyDown}>
-                    <textarea name="prompt" className={"form-input w-full border-none bg-gray-800 mt-2 p-2 rounded shadow"} placeholder={"Shift+Enter for newlines"} />
+                    <textarea disabled={loading} name="prompt" className={"form-input w-full border-none bg-gray-800 mt-2 p-2 rounded shadow"} placeholder={"Shift+Enter for newlines"} />
                     <input type={"submit"} value={"Send"} className={"bg-gray-700 min-w-[100px] text-gray-200 p-2 mt-2 rounded shadow hover:opacity-50 cursor-pointer"} />
                 </form>
             </div>
