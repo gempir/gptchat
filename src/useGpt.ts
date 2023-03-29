@@ -64,5 +64,5 @@ export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | u
 }
 
 export function getOpenAiApiKey() {
-    return localStorage.getItem(GptConfig.OPEN_AI_API_KEY) ?? "";
+    return localStorage.getItem(GptConfig.OPEN_AI_API_KEY) ?? "NO_KEY";
 }
