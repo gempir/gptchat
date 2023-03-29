@@ -8,10 +8,10 @@ type ChatMsg = {
     content: string;
 };
 
-export function useGpt(): { makeRequest: (prompt: string) => void, messages: Array<ChatCompletionRequestMessage>, loading: boolean } {
-    const [msgs, setMsgs] = useState<Array<ChatCompletionRequestMessage>>([{content: "You are a helpful assistant who speaks like it is Skynet from the Terminator movies", role: "system"}]);
+export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | undefined>, messages: Array<ChatCompletionRequestMessage>, loading: boolean } {
+    const [msgs, setMsgs] = useState<Array<ChatCompletionRequestMessage>>([{ content: "You are a helpful assistant.", role: "system" }]);
     const [openAI, setOpenAI] = useState<OpenAIApi>();
-    const {makeSound} = useElevenLabsApi();
+    const { makeSound } = useElevenLabsApi();
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -27,9 +27,9 @@ export function useGpt(): { makeRequest: (prompt: string) => void, messages: Arr
         setOpenAI(client);
     }, []);
 
-    const makeRequest = (prompt: string): void => {
+    const makeRequest = (prompt: string): Promise<ChatMsg | undefined> => {
         if (!openAI) {
-            return;
+            return Promise.resolve(undefined);
         }
 
         const userMessage: ChatCompletionRequestMessage = { content: prompt, role: "user" };
@@ -43,22 +43,26 @@ export function useGpt(): { makeRequest: (prompt: string) => void, messages: Arr
         setMsgs(newMsgs);
 
         setLoading(true);
-        openAI.createChatCompletion(request).then(response => {
+        return openAI.createChatCompletion(request).then(response => {
             const message = response.data.choices[response.data.choices.length - 1].message?.content
             if (!message) {
                 return;
             }
-            
+
             makeSound(message);
             // message.split(".").map(makeSound)
 
             setMsgs([...msgs, userMessage, { content: message, role: "assistant" }]);
+
+            const chatMsg: ChatMsg = { content: message, role: "assistant" };
+
+            return chatMsg;
         }).finally(() => setLoading(false));
     }
 
     return { makeRequest, messages: msgs, loading }
 }
 
-function getOpenAiApiKey() {
-    return localStorage.getItem(GptConfig.OPEN_AI_API_KEY);
+export function getOpenAiApiKey() {
+    return localStorage.getItem(GptConfig.OPEN_AI_API_KEY) ?? "";
 }
