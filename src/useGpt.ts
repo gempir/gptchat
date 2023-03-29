@@ -1,6 +1,7 @@
 import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionRequest, OpenAIApi } from "openai";
 import { useEffect, useState } from "react";
 import { GptConfig } from "./GptConfig";
+import { useElevenLabsApi } from "./voice/useElevenLabs";
 
 type ChatMsg = {
     role: "user" | "assistant" | "system";
@@ -10,6 +11,7 @@ type ChatMsg = {
 export function useGpt(): { makeRequest: (prompt: string) => void, messages: Array<ChatCompletionRequestMessage> } {
     const [msgs, setMsgs] = useState<Array<ChatCompletionRequestMessage>>([{content: "You are a helpful assistant who speaks like it is Skynet from the Terminator movies", role: "system"}]);
     const [openAI, setOpenAI] = useState<OpenAIApi>();
+    const {makeSound} = useElevenLabsApi();
 
     useEffect(() => {
         const apiKey = getOpenAiApiKey();
@@ -44,6 +46,9 @@ export function useGpt(): { makeRequest: (prompt: string) => void, messages: Arr
             if (!message) {
                 return;
             }
+            
+            makeSound(message);
+            // message.split(".").map(makeSound)
 
             setMsgs([...msgs, userMessage, { content: message, role: "assistant" }]);
         });
@@ -54,8 +59,4 @@ export function useGpt(): { makeRequest: (prompt: string) => void, messages: Arr
 
 function getOpenAiApiKey() {
     return localStorage.getItem(GptConfig.OPEN_AI_API_KEY);
-}
-
-function getElevenLabsApiKey() {
-    return localStorage.getItem(GptConfig.ELEVEN_LABS_API_KEY);
 }
