@@ -21,38 +21,41 @@ export function GptPage() {
         stopRecording,
     } = useWhisper({
         apiKey: getOpenAiApiKey(),
-        streaming: true,
-        timeSlice: 1_000, // 1 second
+        streaming: false,
+        // timeSlice: 1_000, // 1 second
         whisperConfig: {
             language: 'en',
         },
         nonStop: true, // keep recording as long as the user is speaking
-        stopTimeout: 4_000, // 4 second
+        stopTimeout: 3_000, // 3 second
     });
 
-    // useEffect(() => {
-    //     if (!transcribing && !recording && input.trim()) {
-    //         handleSubmit();
-    //     }
-    // }, [input, transcribing, recording]);
-
-    console.log(transcript);
+    useEffect(() => {
+        if (!transcribing && !recording && input.trim()) {
+            // handleSubmit();
+        }
+    }, [input, transcribing, recording]);
 
     useEffect(() => {
-        if (transcript.text) {
+        if (transcript.text && transcript.text?.trim() !== "You") {
             setInput(transcript.text);
         }
     }, [transcript, transcribing]);
 
-    const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
-        e?.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>, prompt?: string) => {
+        let text;
+        if (!prompt) {
+            e?.preventDefault();
 
-        if (!formRef.current) {
-            return;
+            if (!formRef.current) {
+                return;
+            }
+     
+            const formData = new FormData(formRef.current);
+            text = formData.get("prompt") as string;
+        } else {
+            text = prompt;
         }
- 
-        const formData = new FormData(formRef.current);
-        const text = formData.get("prompt") as string;
 
         setInput("");
         stopRecording();

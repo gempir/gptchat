@@ -3,10 +3,10 @@ import { GptConfig } from '../GptConfig';
 import { Voices } from './voices';
 
 export function useElevenLabsApi(): { makeSound: (text: string) => void } {
-    const audioContext = useRef(new AudioContext());
-    const mediaSource = useRef(audioContext.current.createBufferSource());
-
     const makeSound = (text: string) => {
+        const audioContext = new AudioContext();
+        const mediaSource = audioContext.createBufferSource()
+
         fetch(`https://api.elevenlabs.io/v1/text-to-speech/${Voices[0].voice_id}/stream`, {
             method: 'POST',
             headers: {
@@ -15,18 +15,17 @@ export function useElevenLabsApi(): { makeSound: (text: string) => void } {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ text })
-
         }).then(response => response.arrayBuffer())
-            .then(audioData => audioContext.current.decodeAudioData(audioData))
+            .then(audioData => audioContext.decodeAudioData(audioData))
             .then(decodedAudio => {
                 // Set media source buffer's buffer to decoded audio
-                mediaSource.current.buffer = decodedAudio;
+                mediaSource.buffer = decodedAudio;
 
                 // Connect media source buffer to audio context's destination
-                mediaSource.current.connect(audioContext.current.destination);
+                mediaSource.connect(audioContext.destination);
 
                 // Start playing audio
-                mediaSource.current.start();
+                mediaSource.start();
             })
             .catch(error => {
                 console.error('Error:', error);
