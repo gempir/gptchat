@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
+import { getConfig } from '../ConfigPage';
 import { GptConfig } from '../GptConfig';
 import useMap, { useMapReturn } from './useMap';
-import { Voices } from './voices';
 
 
 type Return = {
@@ -13,6 +14,26 @@ type Sound = {
     audio: AudioBufferSourceNode;
     textId: string;
     loading: boolean;
+}
+
+export interface Voice {
+    voice_id: string;
+    name: string;
+}
+
+export function useVoices() {
+    const [voices, setVoices] = useState<Array<Voice>>([]);
+
+    useEffect(() => {
+        fetch(`https://api.elevenlabs.io/v1/voices`, {
+            headers: {
+                'xi-api-key': getElevenLabsApiKey(),
+                'Content-Type': 'application/json',
+            },
+        }).then(response => response.json()).then(resp => resp.voices).then(setVoices)
+    }, []);
+
+    return voices;
 }
 
 export function useElevenLabsApi(onEnded: (textId: string) => void): Return {
@@ -32,7 +53,7 @@ export function useElevenLabsApi(onEnded: (textId: string) => void): Return {
             loading: true,
         });
 
-        fetch(`https://api.elevenlabs.io/v1/text-to-speech/${Voices[0].voice_id}/stream`, {
+        fetch(`https://api.elevenlabs.io/v1/text-to-speech/${getConfig(GptConfig.VOICE_ID)}/stream`, {
             method: 'POST',
             headers: {
                 'Accept': 'audio/mpeg',

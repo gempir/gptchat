@@ -1,11 +1,12 @@
 "use client";
+import { GptConfig } from "@/src/GptConfig";
 import { ArrowLeftCircleIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { FormEvent } from "react";
-import { GptConfig } from "@/src/GptConfig";
-import { Voices } from "./voice/voices";
+import { useVoices } from "./voice/useElevenLabs";
 
 export default function ConfigPage() {
+    const voices = useVoices();
 
     const saveToLocalStorage = (key: GptConfig, e: FormEvent<HTMLInputElement | HTMLSelectElement>) => {
         localStorage.setItem(key, e.currentTarget.value.trim());
@@ -22,22 +23,22 @@ export default function ConfigPage() {
                         <strong>OpenAPI API Key:</strong>
                         <br />
                         <a href="https://platform.openai.com/account/api-keys" className="text-gray-500 hover:text-gray-200" target="_blank" rel="noreferrer">Get API Key</a>
-                        <input className="block truncate form-input w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" type="password" onChange={e => saveToLocalStorage(GptConfig.OPEN_AI_API_KEY, e)} defaultValue={getCurrentValue(GptConfig.OPEN_AI_API_KEY)} />
+                        <input className="block truncate form-input w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" type="password" onChange={e => saveToLocalStorage(GptConfig.OPEN_AI_API_KEY, e)} defaultValue={getConfig(GptConfig.OPEN_AI_API_KEY)} />
                     </label>
                     <br />
                     <label>
                         ElevenLebs API Key:
                         <br />
                         <a href="https://beta.elevenlabs.io/" className="text-gray-500 hover:text-gray-200" target="_blank" rel="noreferrer">Get API Key (Profile)</a>
-                        <input className="block truncate form-input w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" type="password" onChange={e => saveToLocalStorage(GptConfig.ELEVEN_LABS_API_KEY, e)} defaultValue={getCurrentValue(GptConfig.ELEVEN_LABS_API_KEY)} />
+                        <input className="block truncate form-input w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" type="password" onChange={e => saveToLocalStorage(GptConfig.ELEVEN_LABS_API_KEY, e)} defaultValue={getConfig(GptConfig.ELEVEN_LABS_API_KEY)} />
                     </label>
                     <br />
                     <label>
                         <strong>Voice:</strong>
                         <br />
                         <select className="block truncate form-select w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" onChange={e => saveToLocalStorage(GptConfig.VOICE_ID, e)}>
-                            {Object.values(Voices).map(voice =>
-                                <option key={voice.voice_id} value={voice.voice_id} selected={getCurrentValue(GptConfig.VOICE_ID) === voice.voice_id}>{voice.name}</option>
+                            {Object.values(voices).map(voice =>
+                                <option key={voice.voice_id} value={voice.voice_id} selected={getConfig(GptConfig.VOICE_ID) === voice.voice_id}>{voice.name}</option>
                             )}
                         </select>
                         <br />
@@ -50,7 +51,11 @@ export default function ConfigPage() {
     );
 }
 
-function getCurrentValue(key: GptConfig) {
+export function getConfig(key: GptConfig) {
+    if (key === GptConfig.VOICE_ID) {
+        return (window?.localStorage?.getItem(key)) ?? "21m00Tcm4TlvDq8ikWAM";
+    }
+
     if (typeof window === "undefined") return "";
 
     return (window?.localStorage?.getItem(key)) ?? "";
