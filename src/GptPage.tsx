@@ -4,10 +4,12 @@ import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import useSpeechToText from "react-hook-speech-to-text";
 import { useGpt } from "./useGpt";
+import { useElevenLabsApi } from "./voice/useElevenLabs";
 
 export default function GptPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const [input, setInput] = useState<string>("");
+    const { makeSound, sounds, stopSound } = useElevenLabsApi();
     const {
         error,
         interimResult,
@@ -52,7 +54,7 @@ export default function GptPage() {
 
         setInput("");
         stopSpeechToText();
-        makeRequest(text);
+        makeRequest(text).then(chatMsg => makeSound(chatMsg?.content, chatMsg?.content));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -72,11 +74,11 @@ export default function GptPage() {
                     {messages.map((message, i) => <div key={i} className="flex items-center gap-2">
                         <div className="text-slate-600">{
                             message.role == "user" ? <UserIcon className="h-6" /> :
-                                message.role == "assistant" ? <CpuChipIcon className="h-6" /> :
+                                message.role == "assistant" ? <CpuChipIcon className={`h-6 ${sounds.get(message.content)?.loading === false ? "text-red-700 cursor-pointer" : ""} ${sounds.get(message.content)?.loading === true ? "animate-pulse cursor-pointer" : ""}`} onClick={() => stopSound(message.content)} /> :
                                     message.role == "system" ? <CommandLineIcon className="h-6" /> : ""
                         }</div>
                         <div className={`p-2 my-2 w-full rounded  ${message.role == "user" ? "bg-gray-800" : ""} ${message.role == "assistant" ? "bg-gray-700" : ""} ${message.role == "system" ? "text-slate-600 bg-gray-800" : ""}`}>
-                            <div className="whitespace-pre-wrap">{message.content}</div>
+                            <div className={`whitespace-pre-wrap`}>{message.content}</div>
                         </div>
                     </div>)}
                 </div>

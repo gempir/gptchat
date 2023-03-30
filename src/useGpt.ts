@@ -11,7 +11,6 @@ type ChatMsg = {
 export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | undefined>, messages: Array<ChatCompletionRequestMessage>, loading: boolean } {
     const [msgs, setMsgs] = useState<Array<ChatCompletionRequestMessage>>([{ content: "You are a helpful assistant.", role: "system" }]);
     const [openAI, setOpenAI] = useState<OpenAIApi>();
-    const { makeSound } = useElevenLabsApi();
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -49,10 +48,8 @@ export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | u
                 return;
             }
 
-            makeSound(message);
-            // message.split(".").map(makeSound)
-
-            setMsgs([...msgs, userMessage, { content: message, role: "assistant" }]);
+            const newMsgs: Array<ChatMsg> = [...msgs, userMessage, { content: message, role: "assistant" }];
+            setMsgs(newMsgs);
 
             const chatMsg: ChatMsg = { content: message, role: "assistant" };
 
