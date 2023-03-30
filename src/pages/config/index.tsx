@@ -1,4 +1,4 @@
-import ConfigPage from "@/src/ConfigPage";
+import ConfigPage from "@/src/components/ConfigPage";
 
 export default function Config() {
     return (

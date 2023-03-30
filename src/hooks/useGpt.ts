@@ -1,7 +1,6 @@
 import { ChatCompletionRequestMessage, Configuration, CreateChatCompletionRequest, OpenAIApi } from "openai";
 import { useEffect, useState } from "react";
-import { GptConfig } from "./GptConfig";
-import { useElevenLabsApi } from "./voice/useElevenLabs";
+import { useStore } from "../store";
 
 type ChatMsg = {
     role: "user" | "assistant" | "system";
@@ -12,19 +11,19 @@ export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | u
     const [msgs, setMsgs] = useState<Array<ChatCompletionRequestMessage>>([{ content: "You are a helpful assistant.", role: "system" }]);
     const [openAI, setOpenAI] = useState<OpenAIApi>();
     const [loading, setLoading] = useState(false);
+    const openAiApiKey = useStore(state => state.openAiApiKey);
 
     useEffect(() => {
-        const apiKey = getOpenAiApiKey();
-        if (!apiKey) {
+        if (!openAiApiKey) {
             return;
         }
 
         const configuration = new Configuration({
-            apiKey: apiKey,
+            apiKey: openAiApiKey,
         });
         const client = new OpenAIApi(configuration);
         setOpenAI(client);
-    }, []);
+    }, [openAiApiKey]);
 
     const makeRequest = (prompt: string): Promise<ChatMsg | undefined> => {
         if (!openAI || !prompt) {
@@ -58,8 +57,4 @@ export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | u
     }
 
     return { makeRequest, messages: msgs, loading }
-}
-
-export function getOpenAiApiKey() {
-    return localStorage.getItem(GptConfig.OPEN_AI_API_KEY) ?? "NO_KEY";
 }
