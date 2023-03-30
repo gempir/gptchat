@@ -1,46 +1,39 @@
 "use client";
-import useWhisper from "@chengsokdara/use-whisper";
 import { CogIcon, CommandLineIcon, CpuChipIcon, MicrophoneIcon, UserIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
-import React, { useRef } from "react";
-import { useEffect, useState } from "react";
-import { getOpenAiApiKey, useGpt } from "./useGpt";
+import React, { useEffect, useRef, useState } from "react";
+import useSpeechToText from "react-hook-speech-to-text";
+import { useGpt } from "./useGpt";
 
-export function GptPage() {
+export default function GptPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const [input, setInput] = useState<string>("");
+    const {
+        error,
+        interimResult,
+        isRecording,
+        results,
+        startSpeechToText,
+        stopSpeechToText,
+      } = useSpeechToText({
+        continuous: false,
+        useLegacyResults: false,
+      });
 
     const { makeRequest, messages, loading } = useGpt();
-    const {
-        recording,
-        speaking,
-        transcribing,
-        transcript,
-        pauseRecording,
-        startRecording,
-        stopRecording,
-    } = useWhisper({
-        apiKey: getOpenAiApiKey(),
-        streaming: false,
-        // timeSlice: 1_000, // 1 second
-        whisperConfig: {
-            language: 'en',
-        },
-        nonStop: true, // keep recording as long as the user is speaking
-        stopTimeout: 3_000, // 3 second
-    });
 
     useEffect(() => {
-        if (!transcribing && !recording && input.trim()) {
-            // handleSubmit();
+        if (interimResult) {
+            setInput(interimResult);
         }
-    }, [input, transcribing, recording]);
+    }, [interimResult]);
 
     useEffect(() => {
-        if (transcript.text && transcript.text?.trim() !== "You") {
-            setInput(transcript.text);
+        if (results.length > 0) {
+            handleSubmit();
         }
-    }, [transcript, transcribing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [results]);
 
     const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>, prompt?: string) => {
         let text;
@@ -58,8 +51,8 @@ export function GptPage() {
         }
 
         setInput("");
-        stopRecording();
-        makeRequest(text).then(startRecording);
+        stopSpeechToText();
+        makeRequest(text);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -91,8 +84,8 @@ export function GptPage() {
                     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-400"></div>
                 </div>}
                 <form ref={formRef} onSubmit={handleSubmit} className="flex gap-5 items-center" onKeyDown={handleKeyDown}>
-                    <div className="h-full p-2 rounded cursor-pointer hover:bg-slate-500" onClick={() => recording ? stopRecording() : startRecording()}>
-                        <MicrophoneIcon className={`h-6 ${recording ? "text-red-700" : ""} ${speaking ? "animate-pulse" : ""}`} />
+                    <div className="h-full p-2 rounded cursor-pointer hover:bg-slate-500" onClick={() => isRecording ? stopSpeechToText() : startSpeechToText()}>
+                        <MicrophoneIcon className={`h-6 ${isRecording ? "text-red-700" : ""}`} />
                     </div>
                     <textarea disabled={loading} name="prompt" value={input} onChange={e => setInput(e.currentTarget.value)} className={"min-h-[100px] form-input w-full border-none bg-gray-800 mt-2 p-2 rounded shadow"} placeholder={"Shift+Enter for newlines"} />
                     <input type={"submit"} value={"Send"} className={"h-full bg-gray-700 min-w-[100px] text-gray-200 p-2 mt-2 rounded shadow hover:opacity-50 cursor-pointer"} />

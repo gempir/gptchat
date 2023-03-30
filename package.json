@@ -9,9 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@chengsokdara/use-whisper": "^0.2.0",
-    "@ffmpeg/core": "^0.11.0",
-    "@ffmpeg/ffmpeg": "^0.11.6",
     "@heroicons/react": "^2.0.16",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
@@ -22,6 +19,7 @@
     "openai": "^3.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-speech-to-text": "^0.8.0",
     "typescript": "5.0.2"
   },
   "devDependencies": {
