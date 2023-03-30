@@ -28,7 +28,7 @@ export function useGpt(): { makeRequest: (prompt: string) => Promise<ChatMsg | u
     }, []);
 
     const makeRequest = (prompt: string): Promise<ChatMsg | undefined> => {
-        if (!openAI) {
+        if (!openAI || !prompt) {
             return Promise.resolve(undefined);
         }
 
