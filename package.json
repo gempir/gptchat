@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@chengsokdara/use-whisper": "^0.2.0",
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.11.6",
     "@heroicons/react": "^2.0.16",
     "@types/node": "18.15.11",
     "@types/react": "18.0.31",
