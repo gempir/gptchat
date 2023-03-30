@@ -15,7 +15,7 @@ type Sound = {
     loading: boolean;
 }
 
-export function useElevenLabsApi(): Return {
+export function useElevenLabsApi(onEnded: (textId: string) => void): Return {
     const [sounds, actions] = useMap(new Map<string, Sound>);
 
     const makeSound = (text?: string, textId?: string) => {
@@ -59,6 +59,7 @@ export function useElevenLabsApi(): Return {
                     // Clean up
                     mediaSource.disconnect();
                     actions.remove(textId);
+                    onEnded(textId);
                 }
 
                 // Start playing audio
@@ -75,6 +76,7 @@ export function useElevenLabsApi(): Return {
             sound.audio.stop();
             sound.audio.disconnect();
             actions.remove(textId);
+            onEnded(textId);
         }
     }
 

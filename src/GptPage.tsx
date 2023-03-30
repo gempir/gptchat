@@ -9,7 +9,8 @@ import { useElevenLabsApi } from "./voice/useElevenLabs";
 export default function GptPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const [input, setInput] = useState<string>("");
-    const { makeSound, sounds, stopSound } = useElevenLabsApi();
+
+
     const {
         error,
         interimResult,
@@ -17,10 +18,16 @@ export default function GptPage() {
         results,
         startSpeechToText,
         stopSpeechToText,
-      } = useSpeechToText({
+    } = useSpeechToText({
         continuous: false,
         useLegacyResults: false,
-      });
+    });
+    const handleOnEnded = (textId: string) => {
+        if (!isRecording) {
+            startSpeechToText();
+        }
+    };
+    const { makeSound, sounds, stopSound } = useElevenLabsApi(handleOnEnded);
 
     const { makeRequest, messages, loading } = useGpt();
 
@@ -34,7 +41,7 @@ export default function GptPage() {
         if (results.length > 0) {
             handleSubmit();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [results]);
 
     const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>, prompt?: string) => {
@@ -45,7 +52,7 @@ export default function GptPage() {
             if (!formRef.current) {
                 return;
             }
-     
+
             const formData = new FormData(formRef.current);
             text = formData.get("prompt") as string;
         } else {
