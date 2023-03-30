@@ -5,11 +5,11 @@ import React, { useEffect, useRef, useState } from "react";
 import useSpeechToText from "react-hook-speech-to-text";
 import { useGpt } from "./useGpt";
 import { useElevenLabsApi } from "./voice/useElevenLabs";
+import { VolumeSlider } from "./voice/VolumeSlider";
 
 export default function GptPage() {
     const formRef = useRef<HTMLFormElement>(null);
     const [input, setInput] = useState<string>("");
-
 
     const {
         error,
@@ -24,10 +24,10 @@ export default function GptPage() {
     });
     const handleOnEnded = (textId: string) => {
         if (!isRecording) {
-            startSpeechToText();
+            // startSpeechToText();
         }
     };
-    const { makeSound, sounds, stopSound } = useElevenLabsApi(handleOnEnded);
+    const { makeSound, sounds, stopSound, setGain } = useElevenLabsApi(handleOnEnded);
 
     const { makeRequest, messages, loading } = useGpt();
 
@@ -75,6 +75,7 @@ export default function GptPage() {
         <Link href="/config" className="absolute top-5 left-5">
             <CogIcon className="h-6 hover:opacity-50 cursor-pointer" />
         </Link>
+        <VolumeSlider setGain={setGain} />
         <div className="p-5 container mx-auto">
             <div className="p-4 min-w-[400px]">
                 <div className="">

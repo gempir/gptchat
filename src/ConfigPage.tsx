@@ -4,6 +4,7 @@ import { ArrowLeftCircleIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { FormEvent } from "react";
 import { useVoices } from "./voice/useElevenLabs";
+import { VolumeSlider } from "./voice/VolumeSlider";
 
 export default function ConfigPage() {
     const voices = useVoices();
@@ -17,6 +18,7 @@ export default function ConfigPage() {
             <Link href={"/"} className="absolute top-5 left-5">
                 <ArrowLeftCircleIcon className="h-6 hover:opacity-50 cursor-pointer" />
             </Link>
+            <VolumeSlider />
             <div className="p-5 container mx-auto">
                 <div className="p-4 bg-gray-800 rounded shadow min-w-[400px]">
                     <label>
@@ -34,7 +36,7 @@ export default function ConfigPage() {
                     </label>
                     <br />
                     <label>
-                        <strong>Voice:</strong>
+                        <strong>Voice (Refresh after setting API Key):</strong>
                         <br />
                         <select className="block truncate form-select w-full border-none bg-gray-700 mt-2 p-2 rounded shadow" onChange={e => saveToLocalStorage(GptConfig.VOICE_ID, e)}>
                             {Object.values(voices).map(voice =>
@@ -51,12 +53,8 @@ export default function ConfigPage() {
     );
 }
 
-export function getConfig(key: GptConfig) {
-    if (key === GptConfig.VOICE_ID) {
-        return (window?.localStorage?.getItem(key)) ?? "21m00Tcm4TlvDq8ikWAM";
-    }
+export function getConfig(key: GptConfig, fallback?: string) {
+    if (typeof window === "undefined") return fallback;
 
-    if (typeof window === "undefined") return "";
-
-    return (window?.localStorage?.getItem(key)) ?? "";
+    return (window?.localStorage?.getItem(key)) ?? fallback;
 }
