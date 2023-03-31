@@ -6,40 +6,61 @@ import useSpeechToText from "react-hook-speech-to-text";
 import { useGpt } from "../hooks/useGpt";
 import { useElevenLabsApi } from "../hooks/useElevenLabs";
 import { VolumeSlider } from "./VolumeSlider";
+import { useStore } from "../store";
+import { ResultType } from "react-hook-speech-to-text";
 
 export default function GptPage() {
     const formRef = useRef<HTMLFormElement>(null);
+    const openMic = useStore(state => state.openMic);
     const [input, setInput] = useState<string>("");
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
     const {
         error,
         interimResult,
         isRecording,
         results,
+        setResults,
         startSpeechToText,
         stopSpeechToText,
     } = useSpeechToText({
-        continuous: false,
+        continuous: openMic,
         useLegacyResults: false,
     });
-    const handleOnEnded = (textId: string) => {
-        if (!isRecording) {
-            // startSpeechToText();
+    const { makeSound, sounds, stopSound } = useElevenLabsApi(() => {
+        if (openMic) {
+            startSpeechToText().catch();
         }
-    };
-    const { makeSound, sounds, stopSound } = useElevenLabsApi(handleOnEnded);
+    });
 
     const { makeRequest, messages, loading } = useGpt();
 
     useEffect(() => {
-        if (interimResult) {
-            setInput(interimResult);
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
         }
-    }, [interimResult]);
+
+        let inputVal = results.map(result => (result as ResultType).transcript).join(" ");
+        inputVal = inputVal.trim();
+        if (interimResult) {
+            inputVal += ` ${interimResult}`;
+        }
+
+        if (inputVal.trim()) {
+            setInput(inputVal);
+        }
+    }, [interimResult, results]);
 
     useEffect(() => {
         if (results.length > 0) {
-            handleSubmit();
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+
+            timeoutRef.current = setTimeout(() => {
+                console.log(results);
+                handleSubmit(undefined, results.map(result => (result as ResultType).transcript).join(" "));
+            }, 3000);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [results]);
@@ -59,8 +80,11 @@ export default function GptPage() {
             text = prompt;
         }
 
+        setResults([]);
         setInput("");
-        stopSpeechToText();
+        try {
+            stopSpeechToText()
+        } catch (e) { }
         makeRequest(text).then(chatMsg => makeSound(chatMsg?.content, chatMsg?.content));
     };
 

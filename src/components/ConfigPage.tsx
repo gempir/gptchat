@@ -6,6 +6,9 @@ import { useStore } from "../store";
 import { VolumeSlider } from "./VolumeSlider";
 
 export default function ConfigPage() {
+    const openMic = useStore(state => state.openMic);
+    const setOpenMic = useStore(state => state.setOpenMic);
+
     const openAiApiKey = useStore(state => state.openAiApiKey);
     const setOpenAiApiKey = useStore(state => state.setOpenAiApiKey);
 
@@ -25,6 +28,15 @@ export default function ConfigPage() {
             <VolumeSlider />
             <div className="p-5 container mx-auto">
                 <div className="p-4 bg-gray-800 rounded shadow min-w-[400px]">
+                    <label>
+                        <strong>Open Mic</strong>
+                        <br />
+                        <label className="cursor-pointer">
+                            <span className="select-none">Listen for input again after TTS finishes</span>
+                            <input className="block truncate form-input border-none bg-gray-700 mt-2 p-2 rounded shadow" type="checkbox" onChange={e => setOpenMic(e.currentTarget.checked)} checked={openMic} />
+                        </label>
+                    </label>
+                    <br />
                     <label>
                         <strong>OpenAPI API Key:</strong>
                         <br />

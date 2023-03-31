@@ -47,7 +47,7 @@ export function useVoices() {
     return voices;
 }
 
-export function useElevenLabsApi(onEnded: (textId: string) => void): Return {
+export function useElevenLabsApi(onEnded?: (textId: string) => void): Return {
     const elevenLabsVoiceId = useStore(state => state.elevenLabsVoiceId);
     const elevenLabsApiKey = useStore(state => state.elevenLabsApiKey);
     const gain = useStore(state => state.gain);
@@ -101,7 +101,9 @@ export function useElevenLabsApi(onEnded: (textId: string) => void): Return {
                 mediaSource.onended = () => {
                     mediaSource.disconnect();
                     actions.remove(textId);
-                    onEnded(textId);
+                    if (onEnded) {
+                        onEnded(textId);
+                    }
                 }
                 mediaSource.start();
             })
@@ -116,7 +118,9 @@ export function useElevenLabsApi(onEnded: (textId: string) => void): Return {
             sound.audio.stop();
             sound.audio.disconnect();
             actions.remove(textId);
-            onEnded(textId);
+            if (onEnded) {
+                onEnded(textId);
+            }
         }
     }
 
